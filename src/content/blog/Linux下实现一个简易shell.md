@@ -1,7 +1,7 @@
 ---
 title: Linux 下实现一个简易 shell
 author: daz
-pubDatetime: 2023-04-15T15:17:23.108Z
+pubDatetime: 2023-04-16T12:48:04Z
 featured: false
 draft: false
 tags:
@@ -14,9 +14,13 @@ description: "small projext"
 本作品采用[知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议](https://creativecommons.org/licenses/by-nc-sa/4.0/)进行许可。
 
 ---
+
 [迁移博客]
-# intro
-- 争取在自己的简易shell中可以实现以下命令
+
+## intro
+
+- 争取在自己的简易 shell 中可以实现以下命令
+
 ```
 xxx@xxx ~ $ ./xxx-super-shell
 xxx@xxx ~ $ echo ABCDEF
@@ -33,26 +37,32 @@ xxx@xxx ~ $ ./xxx-super-shell # shell 中嵌套 shell
 xxx@xxx ~ $ exit
 xxx@xxx ~ $ exit
 ```
-## 任务解析
-- 任务目标:
-    - 实现 `管道` (也就是 |)
-    - 实现 `输入输出重定向`(也就是 < > >>)
-    - 实现 `后台运行`（也就是 & ）
-    - 实现 `cd`，要求支持能切换到 **绝对路径**，**相对路径**和**支持 `cd -`**
-    - `屏蔽`一些信号（如 ctrl + c 不能终止）
-    - 界面`美观`
-    - **不得出现内存泄漏，内存越界等错误**
 
-- 核心为掌握`Linux系统编程`中`进程`的相关部分,能够正确调用相应API完成任务,保证每个函数的逻辑正确
+#### 任务解析
+
+- 任务目标:
+
+  - 实现 `管道` (也就是 |)
+  - 实现 `输入输出重定向`(也就是 < > >>)
+  - 实现 `后台运行`（也就是 & ）
+  - 实现 `cd`，要求支持能切换到 **绝对路径**，**相对路径**和**支持 `cd -`**
+  - `屏蔽`一些信号（如 ctrl + c 不能终止）
+  - 界面`美观`
+  - **不得出现内存泄漏，内存越界等错误**
+
+- 核心为掌握`Linux系统编程`中`进程`的相关部分,能够正确调用相应 API 完成任务,保证每个函数的逻辑正确
 
 - 难点:
-    - 最难的就是实现管道,而且是多重管道ಥʖ̯ಥ,关于实现管道的的**基本原理**可以参考我的这篇博客——[Linux下实现一个简单的单向管道及其理解](https://blog.csdn.net/m0_61536749/article/details/124047437?spm=1001.2014.3001.5501)
-    - 代码的`去耦合`与`功能分块`也是一个难点，但这次做的还行
-    - 写完之后再回想,想不起来很多当时觉得难的不行的东西了,其实经历完绝望之谷之后,不仅技术会提升,心态也会更好
+  - 最难的就是实现管道,而且是多重管道 ಥʖ̯ಥ,关于实现管道的的**基本原理**可以参考我的这篇博客——[Linux 下实现一个简单的单向管道及其理解](https://blog.csdn.net/m0_61536749/article/details/124047437?spm=1001.2014.3001.5501)
+  - 代码的`去耦合`与`功能分块`也是一个难点，但这次做的还行
+  - 写完之后再回想,想不起来很多当时觉得难的不行的东西了,其实经历完绝望之谷之后,不仅技术会提升,心态也会更好
 
-# 框架函数
-## main()
-- 从main函数入手来剖析我们需要实现的所有功能是一个不错的选择
+## 框架函数
+
+#### main()
+
+- 从 main 函数入手来剖析我们需要实现的所有功能是一个不错的选择
+
 ```c
 int main()
 {
@@ -76,19 +86,22 @@ int main()
 }
 ```
 
-- 在main函数中,我们首先会注意到`readline`这个完全陌生的库,它帮助我们完成了很多工作:
-    - 用户命令的获取
-    - 动态内存的申请
-    - 历史命令的存写
-    - 那么,我们怎么才能掌握这么有用的库呢,这个问题的答案碍于篇幅我就不再展开，请大家参考这篇博客——[readline库的简单使用](https://blog.csdn.net/xuancbm/article/details/81436681?ops_request_misc=&request_id=&biz_id=102&utm_term=readline&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-1-81436681.142^v11^control,157^v13^control&spm=1018.2226.3001.4187)
+- 在 main 函数中,我们首先会注意到`readline`这个完全陌生的库,它帮助我们完成了很多工作:
+
+  - 用户命令的获取
+  - 动态内存的申请
+  - 历史命令的存写
+  - 那么,我们怎么才能掌握这么有用的库呢,这个问题的答案碍于篇幅我就不再展开，请大家参考这篇博客——[readline 库的简单使用](https://blog.csdn.net/xuancbm/article/details/81436681?ops_request_misc=&request_id=&biz_id=102&utm_term=readline&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-1-81436681.142^v11^control,157^v13^control&spm=1018.2226.3001.4187)
 
 - `parse()` : 顾名思义，这个函数就是用来解析命令的
 - `do_cmd()`：核心函数,执行用户输入的命令
 
-## parse(command)
+#### parse(command)
+
 - 解析`command`
 
 SHOW ME THE CODE:
+
 ```c
 void parse(char *command)
 {
@@ -105,7 +118,7 @@ command 为用户输入的命令
     argc = 0;//命令数计数器
     memset(backupCommand,0,sizeof(backupCommand));//非常重要,因为漏了这一句被整自闭了好久
     strcpy(backupCommand, command);//备份命令
-    
+
     int j = 0;
     int len = strlen(command);
     for(int i = 0; i < len; i++){
@@ -138,14 +151,17 @@ command 为用户输入的命令
     argv[argc] = NULL;
 }
 ```
-- 依靠注释这段代码并不难理解,其为接下来的所有功能提供基础,将同一段命令解析两次是为了满足接下来所有函数的要求
-    - COMMAND:通过与COMMAND数组匹配,确定
-    - argv:
 
-## do_cmd(argc, argv)
-- 其argc与argv与main函数无关,为`parse()`函数解析出来的结果
+- 依靠注释这段代码并不难理解,其为接下来的所有功能提供基础,将同一段命令解析两次是为了满足接下来所有函数的要求
+  - COMMAND:通过与 COMMAND 数组匹配,确定
+  - argv:
+
+#### do_cmd(argc, argv)
+
+- 其 argc 与 argv 与 main 函数无关,为`parse()`函数解析出来的结果
 
 SHOW ME THE CODE:
+
 ```c
 void do_cmd(int argc, char **argv)
 {
@@ -224,23 +240,27 @@ void do_cmd(int argc, char **argv)
     }
 }
 ```
+
 - 这个函数就像是一个中转站，将处理完的命令在这里统一识别与处理，一旦发现命令中的“**特征**”，就调用相应的函数，来完成任务
 - 特殊命令处理:
-    - command_with_Pipe(buf)
-    - command_with_OutRe(buf)
-    - command_with_InRe(buf)
-    - command_with_OutRePlus(buf)
-    - command_with_Back(buf)
+  - command_with_Pipe(buf)
+  - command_with_OutRe(buf)
+  - command_with_InRe(buf)
+  - command_with_OutRePlus(buf)
+  - command_with_Back(buf)
 - 内置命令的处理：
-    - 不能在子进程中进行的内置命令手动实现
-    - `callcd()`
-    - 可以在子进程进行的内置命令交由`execvp()`函数实现
+  - 不能在子进程中进行的内置命令手动实现
+  - `callcd()`
+  - 可以在子进程进行的内置命令交由`execvp()`函数实现
 
-# 具体函数
-## callcd()
-- 关于`cd - `的实现还有一定的bug,具体的修复我想到了一个绝妙的方法,但这里地方太小我写不下,所以还是交给聪明的读者去修复这个讨厌的bug吧
+## 具体函数
+
+#### callcd()
+
+- 关于`cd - `的实现还有一定的 bug,具体的修复我想到了一个绝妙的方法,但这里地方太小我写不下,所以还是交给聪明的读者去修复这个讨厌的 bug 吧
+
 ```c
-char oldPath[BUFFSIZE]; 
+char oldPath[BUFFSIZE];
 void callCd(int argc){
     int result = 1;
     if(argc == 1) {
@@ -282,9 +302,11 @@ void callCd(int argc){
 }
 ```
 
-## command_with_OutRe(buf)
+#### command_with_OutRe(buf)
+
 - `dup2()`的使用是实现重定向的灵魂
 - 利用父子进程完成命令的执行与输出(子进程执行命令并输出到文件后关闭,由父进程负责回收)
+
 ```
 void command_with_OutRe(char *buf)
 {//command > file
@@ -317,7 +339,7 @@ void command_with_OutRe(char *buf)
             break;
         }
     }
-    
+
     parse(buf);//重定向符号后面的为文件，所以需要重新解析命令
     // 子进程执行命令,利用重定向将结果输出到文件中
     pid_t pid = fork();
@@ -347,54 +369,60 @@ void command_with_OutRe(char *buf)
 }
 ```
 
-## command_with_InRe(buf)
-- 逻辑与OutRe相同
+#### command_with_InRe(buf)
+
+- 逻辑与 OutRe 相同
 - 具体代码请参阅源码,本文不再展示
 
-## command_with_OutRePlus(buf)
+#### command_with_OutRePlus(buf)
+
 - 执行追加模式的输出重定向
-- 逻辑与OutRe相同
+- 逻辑与 OutRe 相同
 - 使用`O_APPEND`标志即可
 
-## command_with_Back(buf)
+#### command_with_Back(buf)
+
 - 伪后台执行,此处并非后台执行的真正实现
 - 将标准输入与标准输出重定向至`/dev/null`这个特殊的文件夹后再执行命令
-- `/dev/null`:Linux系统的垃圾桶
-void command_with_Back(char *buf)
-{
-    char BackBuf[strlen(buf)];
-    memset(BackBuf, 0, strlen(buf));
-    //提取 & 前的命令
-    for(int i = 0; i < strlen(buf); i++){
-        BackBuf[i] = buf[i];
-        if(buf[i] == '&'){
-            BackBuf[i-1] = '\0';
-            break;
-        }
-    }
+- `/dev/null`:Linux 系统的垃圾桶
+  void command_with_Back(char \*buf)
+  {
+  char BackBuf[strlen(buf)];
+  memset(BackBuf, 0, strlen(buf));
+  //提取 & 前的命令
+  for(int i = 0; i < strlen(buf); i++){
+  BackBuf[i] = buf[i];
+  if(buf[i] == '&'){
+  BackBuf[i-1] = '\0';
+  break;
+  }
+  }
 
-    pid_t pid = fork();
-    if(pid < 0){
-        my_error("Fork",__LINE__);
-    }
+      pid_t pid = fork();
+      if(pid < 0){
+          my_error("Fork",__LINE__);
+      }
 
-    if(pid == 0){
-        //FILE *freopen(const chat*pathname, const char*mode, FILE *stream);
-        freopen("/dev/null", "w", stdout); 
-        freopen("/dev/null", "r", stdin);
-        signal(SIGCHLD, SIG_IGN);
-        parse(BackBuf);
-        execvp(argv[0], argv);
-        my_error("execvp",__LINE__);
-    }else{
-        exit(0);//父进程直接退出
-    }
-}
+      if(pid == 0){
+          //FILE *freopen(const chat*pathname, const char*mode, FILE *stream);
+          freopen("/dev/null", "w", stdout);
+          freopen("/dev/null", "r", stdin);
+          signal(SIGCHLD, SIG_IGN);
+          parse(BackBuf);
+          execvp(argv[0], argv);
+          my_error("execvp",__LINE__);
+      }else{
+          exit(0);//父进程直接退出
+      }
 
-## command_with_Pipe(buf)
+  }
+
+#### command_with_Pipe(buf)
+
 - 整个目标中最难实现的部分
 - 还需搭配`parse_pipe()`函数一起使用
 - 下列代码将附带详细注释
+
 ```c
 void command_with_Pipe(char *buf)
 {
@@ -419,7 +447,7 @@ void command_with_Pipe(char *buf)
         }
         if(cmd_num == 17)//16根管道最多支持17条命令
             break;
-    }   
+    }
 
     for (i = 0; i < pipe_num; i++){//创建管道
         if(pipe(fd[i])){
@@ -455,7 +483,7 @@ void command_with_Pipe(char *buf)
                 }
             }else{
                 //重定中间进程的标准输入至管道读端
-                dup2(fd[i-1][0], STDIN_FILENO); 
+                dup2(fd[i-1][0], STDIN_FILENO);
                 close(fd[i-1][1]);
                 //重定中间进程的标准输出至管道写端
                 dup2(fd[i][1], STDOUT_FILENO);
@@ -492,8 +520,10 @@ void command_with_Pipe(char *buf)
 }
 ```
 
-### parse_pipe()
+#### parse_pipe()
+
 - 为多重管道的实现提供基础,管道符两侧可加空格也可不加空格
+
 ```c
 int flag_out = 0;
 int flag_in = 0 ;
@@ -543,8 +573,10 @@ int parse_pipe(char *buf,int cmd_num)
 }
 ```
 
-# 信号处理 与 错误处理
+## 信号处理 与 错误处理
+
 - 使用`signal()`调用忽略所有信号
+
 ```c
 void my_signal()
 {
@@ -557,6 +589,7 @@ void my_signal()
 ```
 
 - 输出错误原因与行号
+
 ```c
 void my_error(char *string, int line)
 {// 用法示例: myerror("malloc", __LINE__);
@@ -566,8 +599,10 @@ void my_error(char *string, int line)
 }
 ```
 
------
-# 参考:
-1. 《UNIX/Linux编程实践教程》
+---
+
+## 参考:
+
+1. 《UNIX/Linux 编程实践教程》
 2. 《TLPI》
-3. [Linux——实现简单的交互式shell](https://blog.csdn.net/xiaoan08133192/article/details/105099371)
+3. [Linux——实现简单的交互式 shell](https://blog.csdn.net/xiaoan08133192/article/details/105099371)

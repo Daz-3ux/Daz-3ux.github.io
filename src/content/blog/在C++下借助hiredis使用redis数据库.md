@@ -1,7 +1,7 @@
 ---
 title: 在C++下借助hiredis使用redis数据库
 author: daz
-pubDatetime: 2023-04-15T15:17:23.108Z
+pubDatetime: 2023-04-16T12:48:04Z
 featured: false
 draft: false
 tags:
@@ -10,31 +10,35 @@ ogImage: ""
 description: "redis && hiredis"
 ---
 
-![](https://img-blog.csdnimg.cn/img_convert/54e60afdf2764a07539da3136f3ce3e4.png)
+![版权头](https://img-blog.csdnimg.cn/img_convert/54e60afdf2764a07539da3136f3ce3e4.png)
 本作品采用[知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议](https://creativecommons.org/licenses/by-nc-sa/4.0/)进行许可。
 
 ---
+
 [迁移博客]
-# 在C++下借助hiredis使用redis数据库
+
+# 在 C++下借助 hiredis 使用 redis 数据库
 
 ## 简介
-- 本文为我在编写C++聊天室项目时使用redis的经验之谈,主要讲解如何使用`C++`去调用redis数据库,并将其封装为一个类,方便程序随时调用
-- 因为项目并没有使用到redis的订阅发布模式,所以本文所提及的均为redis的键值命令,大概如下:
+
+- 本文为我在编写 C++聊天室项目时使用 redis 的经验之谈,主要讲解如何使用`C++`去调用 redis 数据库,并将其封装为一个类,方便程序随时调用
+- 因为项目并没有使用到 redis 的订阅发布模式,所以本文所提及的均为 redis 的键值命令,大概如下:
   - key
   - string
   - hash
   - list
   - set
-- 调用redis的方法是借助hiredis接口使用redis命令进操作
+- 调用 redis 的方法是借助 hiredis 接口使用 redis 命令进操作
 
+## 关于 hiredis
 
-## 关于hiredis
-- `hiredis`是redis数据库的简约`C客户端库`，是redis官方的C语言客户端，支持所有命令(command set)，管道(pipelining)，时间驱动编程(event driven programming)
-- `hiredis项目地址`: github地址：https://github.com/redis/hiredis
+- `hiredis`是 redis 数据库的简约`C客户端库`，是 redis 官方的 C 语言客户端，支持所有命令(command set)，管道(pipelining)，时间驱动编程(event driven programming)
+- `hiredis项目地址`: github 地址：https://github.com/redis/hiredis
 
-## 编写为C++类
+## 编写为 C++类
 
 ### 头文件
+
 ```cpp
 #include <hiredis/hiredis.h>
 
@@ -48,8 +52,9 @@ description: "redis && hiredis"
 ```
 
 ### 类的主要结构
+
 ```cpp
-class Redis 
+class Redis
 {
 public:
   // redis的构造函数
@@ -195,7 +200,8 @@ private:
 };
 ```
 
-### 调用demo
+### 调用 demo
+
 - 在我的聊天室项目中,`只有服务器连接了redis`,主要用来存储和获取用户数据
 
 ```cpp
@@ -230,5 +236,6 @@ int main()
 ```
 
 ## 完整代码
-- 完整的代码在我的Github仓库,附带有简单注释
+
+- 完整的代码在我的 Github 仓库,附带有简单注释
 - 地址: https://github.com/Daz-3ux/tasks/blob/master/chat/include/REDIS.hpp
