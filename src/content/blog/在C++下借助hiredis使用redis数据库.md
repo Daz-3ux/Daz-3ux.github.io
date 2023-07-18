@@ -21,7 +21,7 @@ description: "redis && hiredis"
 
 ## 简介
 
-- 本文为我在编写 C++聊天室项目时使用 redis 的经验之谈,主要讲解如何使用`C++`去调用 redis 数据库,并将其封装为一个类,方便程序随时调用
+- 本文为我在编写 C++ 聊天室项目时使用 redis 的经验之谈,主要讲解如何使用`C++`去调用 redis 数据库,并将其封装为一个类,方便程序随时调用
 - 因为项目并没有使用到 redis 的订阅发布模式,所以本文所提及的均为 redis 的键值命令,大概如下:
   - key
   - string
@@ -72,7 +72,23 @@ public:
 
   bool setString(std::string key, std::string value)
   {
-    // SET命令
+    redisReply *reply;
+    bool result = false;
+    reply = (redisReply *)redisCommand(m_redis, "SET %s %s", key.c_str(),
+                                       value.c_str());
+    if (reply == NULL) {
+      redisFree(m_redis);
+      m_redis = NULL;
+      result = false;
+      std::cout << "set string faild" << __LINE__ << std::endl;
+      return result;
+    } else if (strcmp(reply->str, "OK") == 0) {
+      result = true;
+    }
+
+    freeReplyObject(reply);
+
+    return result;
   }
 
   std::string getString(std::string key)
@@ -209,6 +225,7 @@ private:
 
 int main()
 {
+  /*
   // 初始化自定义的redis类
   Redis myredis;
 
@@ -219,7 +236,8 @@ int main()
   }else {
     std::cout << "用户名未注册" << std::endl;
   }
-  /*
+  */
+
   int hashExist(std::string key, std::string field) {  // HEXISTS
     redisReply *reply;
     reply = (redisReply *)redisCommand(m_redis, "HEXISTS %s %s", key.c_str(),
@@ -231,7 +249,6 @@ int main()
     }
     return reply->integer;
   }
-  */
 }
 ```
 
