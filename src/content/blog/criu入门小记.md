@@ -1,5 +1,5 @@
 ---
-title: cgroup 入门小记
+title: criu 入门小记
 author: daz
 pubDatetime: 2023-04-16T12:48:04Z
 featured: false
