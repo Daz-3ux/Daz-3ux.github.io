@@ -5,11 +5,11 @@ pubDatetime: 2024-09-25T09:18:53Z
 featured: false
 draft: false
 tags:
-- AI
-- 提效
-- 工具
-  ogImage: ""
-  description: "AI, 提效"
+  - AI
+  - 提效
+  - 工具
+ogImage: ""
+description: "AI, 提效"
 ---
 
 ![版权头](https://img-blog.csdnimg.cn/img_convert/54e60afdf2764a07539da3136f3ce3e4.png)
